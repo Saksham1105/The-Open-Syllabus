@@ -1,26 +1,50 @@
 # The Open Syllabus
 
-A modern student-first learning hub built with React, Vite, Tailwind, Firebase, and a small Express/Vite server.
+> An open-source, AI-powered academic platform designed to simplify learning through organized study resources, collaboration, and intelligent assistance.
 
-> Test commit to verify GitHub write access.
+## Overview
+The Open Syllabus is a modern web platform that helps students discover, organize, and share academic resources in one place. It combines a responsive frontend with Firebase services and optional AI features to improve the learning experience.
 
-## About
+## Features
+- Course and syllabus management
+- Authentication with Firebase
+- Community discussions
+- Responsive UI with dark mode
+- AI-powered study assistant (Gemini API)
+- Notifications and study mode
 
-The Open Syllabus is a web app for browsing course material, joining discussions, connecting with classmates, and using an AI-powered assistant as an optional helper. It includes:
-
-- React + Vite frontend with animated navigation
-- Firebase authentication and Firestore data access
-- A lightweight Express server for development and production hosting
-- Dark mode, study mode, notifications, and responsive UI
-- Optional Gemini-powered chat support if a valid API key is provided
-
-## Tech stack
-
+## Tech Stack
 - React 19
-- Vite 6
-- Tailwind CSS 4
-- Firebase SDK
+- Vite
+- Tailwind CSS
+- Firebase
 - Express
-- Motion (for animated UI)
-- React Router DOM
-- Lucide icons
+- React Router
+
+## Getting Started
+```bash
+npm install
+npm run dev
+```
+
+## Environment
+Create a `.env.local` file:
+```env
+VITE_GEMINI_API_KEY=your_api_key
+```
+
+## Project Structure
+```
+src/
+components/
+pages/
+contexts/
+public/
+server.js
+```
+
+## Author
+**Saksham Raj Singh Chauhan**
+
+## License
+MIT
