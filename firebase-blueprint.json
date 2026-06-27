@@ -1,0 +1,192 @@
+{
+  "entities": {
+    "Course": {
+      "title": "Course",
+      "description": "A university course hub",
+      "type": "object",
+      "properties": {
+        "code": { "type": "string", "description": "The course code, e.g., MATH101" },
+        "name": { "type": "string", "description": "The full name of the course" },
+        "description": { "type": "string", "description": "A brief description of the course" },
+        "departmentId": { "type": "string", "description": "The ID of the department this course belongs to" },
+        "assignedTeachers": { "type": "array", "items": { "type": "string" }, "description": "List of teachers assigned to this course" },
+        "feeStructure": { "type": "object", "description": "Fee details for this course", "properties": {
+          "tuition": { "type": "number" },
+          "lab": { "type": "number" },
+          "total": { "type": "number" }
+        }}
+      },
+      "required": ["code", "name"]
+    },
+    "Department": {
+      "title": "Department",
+      "description": "A university department",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "hod": { "type": "string", "description": "Head of Department" },
+        "dean": { "type": "string", "description": "Dean of the Faculty/Department" },
+        "feeStructure": { "type": "object", "description": "General fee structure for the department", "properties": {
+          "admission": { "type": "number" },
+          "library": { "type": "number" },
+          "sports": { "type": "number" }
+        }}
+      },
+      "required": ["name"]
+    },
+    "File": {
+      "title": "File",
+      "description": "A shared academic resource",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "The name of the file" },
+        "courseId": { "type": "string", "description": "The ID of the course this file belongs to" },
+        "category": { "type": "string", "enum": ["PYQ", "Notes", "Syllabus", "Other"] },
+        "year": { "type": "number" },
+        "downloadUrl": { "type": "string", "format": "uri" },
+        "verified": { "type": "boolean" },
+        "thanks": { "type": "number" },
+        "uploaderUid": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "courseId", "category", "downloadUrl", "uploaderUid"]
+    },
+    "Advice": {
+      "title": "Advice",
+      "description": "Student-to-student advice for a course",
+      "type": "object",
+      "properties": {
+        "courseId": { "type": "string" },
+        "authorName": { "type": "string" },
+        "authorUid": { "type": "string" },
+        "text": { "type": "string" },
+        "pinned": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["courseId", "authorUid", "text"]
+    },
+    "Deadline": {
+      "title": "Deadline",
+      "description": "A shared academic deadline",
+      "type": "object",
+      "properties": {
+        "courseId": { "type": "string" },
+        "title": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "addedByUid": { "type": "string" }
+      },
+      "required": ["courseId", "title", "date", "addedByUid"]
+    },
+    "ChatGroup": {
+      "title": "Chat Group",
+      "description": "A group for discussion",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "courseId": { "type": "string" },
+        "createdByUid": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "courseId", "createdByUid"]
+    },
+    "ChatMessage": {
+      "title": "Chat Message",
+      "description": "A message in a chat group",
+      "type": "object",
+      "properties": {
+        "groupId": { "type": "string" },
+        "senderUid": { "type": "string" },
+        "senderName": { "type": "string" },
+        "text": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["groupId", "senderUid", "text"]
+    },
+    "User": {
+      "title": "User",
+      "description": "A student profile",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "bio": { "type": "string", "description": "A short bio about the student" },
+        "college": { "type": "string", "description": "The college the student attends" },
+        "friends": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["uid", "displayName", "email"]
+    },
+    "FriendRequest": {
+      "title": "Friend Request",
+      "description": "A request to connect",
+      "type": "object",
+      "properties": {
+        "fromUid": { "type": "string" },
+        "fromName": { "type": "string" },
+        "toUid": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "accepted", "declined"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["fromUid", "toUid", "status"]
+    },
+    "PrivateChat": {
+      "title": "Private Chat",
+      "description": "A 1-on-1 conversation",
+      "type": "object",
+      "properties": {
+        "participants": { "type": "array", "items": { "type": "string" } },
+        "lastMessage": { "type": "string" },
+        "lastMessageAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["participants"]
+    }
+  },
+  "firestore": {
+    "/courses/{courseId}": {
+      "schema": "Course",
+      "description": "Course information"
+    },
+    "/departments/{deptId}": {
+      "schema": "Department",
+      "description": "Department information"
+    },
+    "/courses/{courseId}/files/{fileId}": {
+      "schema": "File",
+      "description": "Files shared for a specific course"
+    },
+    "/courses/{courseId}/advice/{adviceId}": {
+      "schema": "Advice",
+      "description": "Advice shared for a specific course"
+    },
+    "/courses/{courseId}/deadlines/{deadlineId}": {
+      "schema": "Deadline",
+      "description": "Deadlines shared for a specific course"
+    },
+    "/chatGroups/{groupId}": {
+      "schema": "ChatGroup",
+      "description": "Discussion groups"
+    },
+    "/chatGroups/{groupId}/messages/{messageId}": {
+      "schema": "ChatMessage",
+      "description": "Messages within a group"
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/friendRequests/{requestId}": {
+      "schema": "FriendRequest",
+      "description": "Friend requests"
+    },
+    "/privateChats/{chatId}": {
+      "schema": "PrivateChat",
+      "description": "Private chats"
+    },
+    "/privateChats/{chatId}/messages/{messageId}": {
+      "schema": "ChatMessage",
+      "description": "Messages in private chats"
+    }
+  }
+}

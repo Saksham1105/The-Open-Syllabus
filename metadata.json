@@ -1,0 +1,5 @@
+{
+  "name": "The Open Syllabus",
+  "description": "Frictionless, crowdsourced course material sharing for students. No points, no karma, just information.",
+  "requestFramePermissions": ["camera", "microphone", "display-capture"]
+}

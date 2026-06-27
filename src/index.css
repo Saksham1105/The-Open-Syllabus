@@ -1,0 +1,125 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  
+  /* Custom Dark Theme Backgrounds */
+  --color-slate-900: #0f172a; /* Default Slate */
+  --color-midnight: #020617; /* Midnight */
+  --color-ocean: #082f49; /* Ocean Dark */
+  --color-forest: #064e3b; /* Deep Forest */
+  --color-purple: #3b0764; /* Deep Purple */
+}
+
+/* Enable class-based dark mode for Tailwind v4 */
+@variant dark (&:where(.dark, .dark *));
+
+/* Theme Variants */
+:root.dark.theme-midnight {
+  --color-slate-900: #020617;
+  --color-slate-800: #0f172a;
+}
+
+:root.dark.theme-ocean {
+  --color-slate-900: #082f49;
+  --color-slate-800: #0c4a6e;
+  --color-indigo-600: #0ea5e9;
+  --color-indigo-400: #38bdf8;
+}
+
+:root.dark.theme-forest {
+  --color-slate-900: #064e3b;
+  --color-slate-800: #065f46;
+  --color-indigo-600: #10b981;
+  --color-indigo-400: #34d399;
+}
+
+:root.dark.theme-purple {
+  --color-slate-900: #3b0764;
+  --color-slate-800: #4c1d95;
+  --color-indigo-600: #a855f7;
+  --color-indigo-400: #c084fc;
+}
+
+:root.dark.theme-slate {
+  --color-slate-900: #0f172a;
+  --color-slate-800: #1e293b;
+}
+
+/* Interactive & Fun UI Utilities */
+@layer utilities {
+  .glass {
+    @apply bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-white/20 dark:border-slate-800/50;
+  }
+  
+  .text-glow {
+    text-shadow: 0 0 15px var(--color-indigo-400);
+  }
+  
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 40s linear infinite;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-200 dark:bg-slate-800 rounded-full hover:bg-indigo-500 transition-colors;
+}
+
+/* Study Mode Styles */
+:root.study-mode {
+  --color-slate-50: #020617;
+  --color-slate-950: #000000;
+}
+
+:root.study-mode body {
+  @apply transition-all duration-1000;
+}
+
+:root.study-mode .glass {
+  @apply bg-slate-900/40 border-slate-800/30;
+}
+
+:root.study-mode nav {
+  @apply opacity-20 hover:opacity-100 transition-opacity duration-500;
+}
+
+:root.study-mode footer {
+  @apply hidden;
+}
+
+@keyframes focus-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(79, 70, 229, 0.1); }
+  50% { box-shadow: 0 0 40px rgba(79, 70, 229, 0.2); }
+}
+
+:root.study-mode main {
+  animation: focus-glow 4s ease-in-out infinite;
+}
