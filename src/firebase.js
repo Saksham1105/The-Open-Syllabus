@@ -101,6 +101,7 @@ export {
   doc,
   getDoc,
   getDocs,
+  getDownloadURL,
   onAuthStateChanged,
   onSnapshot,
   orderBy,
@@ -111,5 +112,4 @@ export {
   updateDoc,
   uploadBytes,
   where,
-  getDownloadURL,
 };
