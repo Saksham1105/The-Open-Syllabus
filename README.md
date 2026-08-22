@@ -6,6 +6,8 @@
 
 The Open Syllabus brings course resources, discussions, social features, study mode, and an optional AI helper into one web application. The project is built as a React application with a small Express server and Firebase services.
 
+The codebase is intentionally organized around the product rather than a starter template: pages represent user-facing areas, components hold reusable interface pieces, and context providers manage shared application state.
+
 ## Features
 
 - Course and resource discovery
@@ -87,7 +89,7 @@ npm run build
 
 ## Development Notes
 
-Use the existing product-oriented naming and structure. Avoid generic starter-project names, placeholder components, copied demo code, or abstractions that do not reflect an actual product need.
+The project uses standard React composition and local naming conventions. Avoid generic starter-project names, placeholder components, copied demo code, or abstractions that do not reflect an actual product need.
 
 When adding a feature, prefer a small, readable component or helper over a large abstraction layer. Keep state close to the feature that owns it unless the state genuinely needs to be shared.
 

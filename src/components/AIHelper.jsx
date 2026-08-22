@@ -1,67 +1,68 @@
-import { AnimatePresence, motion } from 'motion/react';
-import { Bot, Loader2, MessageSquare, Send, Sparkles, User, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+/* global process */
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { MessageSquare, X, Send, Bot, User, Loader2, Sparkles } from 'lucide-react';
+import { GoogleGenAI } from "@google/genai";
 import { useStudyMode } from '../contexts/StudyModeContext';
 
-const initialMessage = {
-  role: 'assistant',
-  content: "Hi! I'm your Open Syllabus assistant. How can I help you today?",
-};
+const geminiApiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
 
 export default function AIHelper() {
   const { isStudyMode } = useStudyMode();
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState([initialMessage]);
+  const [messages, setMessages] = useState([
+    { role: 'assistant', content: 'Hi! I\'m your Open Syllabus assistant. How can I help you today?' }
+  ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   useEffect(() => {
     if (isOpen) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      scrollToBottom();
     }
   }, [messages, isOpen]);
 
-  async function handleSend(event) {
-    event.preventDefault();
+  const handleSend = async (e) => {
+    e.preventDefault();
+    if (!input.trim() || isLoading) return;
 
-    const message = input.trim();
-    if (!message || isLoading) return;
-
+    const userMessage = input.trim();
     setInput('');
-    setMessages((current) => [...current, { role: 'user', content: message }]);
+    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/ai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'The AI service is unavailable.');
+      if (!geminiApiKey) {
+        throw new Error('Missing Gemini API key');
       }
 
-      setMessages((current) => [
-        ...current,
-        { role: 'assistant', content: data.reply || 'I could not generate a response.' },
-      ]);
+      const ai = new GoogleGenAI({ apiKey: geminiApiKey });
+      const chat = ai.chats.create({
+        model: "gemini-3-flash-preview",
+        config: {
+          systemInstruction: "You are a helpful assistant for 'The Open Syllabus' platform. This platform helps students find course materials, discuss in groups, and connect with friends. You can help them navigate the app, explain features like real-time calls and screen sharing, or answer general academic questions. Keep your responses concise and friendly."
+        }
+      });
+
+      const response = await chat.sendMessage({ message: userMessage });
+      const assistantMessage = response.text;
+      
+      setMessages(prev => [...prev, { role: 'assistant', content: assistantMessage }]);
     } catch (error) {
-      console.error('AI request failed:', error);
-      setMessages((current) => [
-        ...current,
-        {
-          role: 'assistant',
-          content: 'The AI helper is temporarily unavailable. Please try again in a moment.',
-        },
-      ]);
+      console.error("AI Error:", error);
+      const message = error instanceof Error && error.message === 'Missing Gemini API key'
+        ? "The AI helper needs a Gemini API key before it can answer. The rest of the app is ready to use."
+        : "Sorry, I encountered an error. Please try again later.";
+      setMessages(prev => [...prev, { role: 'assistant', content: message }]);
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="fixed bottom-6 right-6 z-[100]">
@@ -71,84 +72,73 @@ export default function AIHelper() {
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="absolute bottom-20 right-0 flex h-[500px] w-80 flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900 sm:w-96"
+            className="absolute bottom-20 right-0 w-80 sm:w-96 h-[500px] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden"
           >
-            <div className="flex items-center justify-between bg-indigo-600 p-4 text-white">
+            {/* Header */}
+            <div className="p-4 bg-indigo-600 text-white flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <div className="rounded-lg bg-white/20 p-1.5">
+                <div className="p-1.5 bg-white/20 rounded-lg">
                   <Sparkles className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold">AI Helper</h3>
-                  <p className="text-[10px] opacity-80">Study assistant</p>
+                  <h3 className="font-bold text-sm">AI Helper</h3>
+                  <p className="text-[10px] opacity-80">Online & Ready to help</p>
                 </div>
               </div>
-              <button
-                type="button"
+              <button 
                 onClick={() => setIsOpen(false)}
-                aria-label="Close AI helper"
-                className="rounded-lg p-1 transition-colors hover:bg-white/20"
+                className="p-1 hover:bg-white/20 rounded-lg transition-colors"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="flex-1 space-y-4 overflow-y-auto bg-slate-50 p-4 dark:bg-slate-900/50">
-              {messages.map((message, index) => {
-                const isUser = message.role === 'user';
-
-                return (
-                  <div key={`${message.role}-${index}`} className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`flex max-w-[85%] items-start space-x-2 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
-                      <div className={`flex-shrink-0 rounded-xl p-2 ${isUser ? 'bg-indigo-100 dark:bg-indigo-900/30' : 'bg-slate-200 dark:bg-slate-800'}`}>
-                        {isUser ? (
-                          <User className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                        ) : (
-                          <Bot className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-                        )}
-                      </div>
-                      <div className={`rounded-2xl p-3 text-sm ${isUser
-                        ? 'rounded-tr-none bg-indigo-600 text-white'
-                        : 'rounded-tl-none border border-slate-100 bg-white text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200'}`}
-                      >
-                        {message.content}
-                      </div>
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-slate-900/50">
+              {messages.map((msg, idx) => (
+                <div 
+                  key={idx}
+                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div className={`flex items-start space-x-2 max-w-[85%] ${msg.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                    <div className={`p-2 rounded-xl flex-shrink-0 ${msg.role === 'user' ? 'bg-indigo-100 dark:bg-indigo-900/30' : 'bg-slate-200 dark:bg-slate-800'}`}>
+                      {msg.role === 'user' ? <User className="h-4 w-4 text-indigo-600 dark:text-indigo-400" /> : <Bot className="h-4 w-4 text-slate-600 dark:text-slate-400" />}
+                    </div>
+                    <div className={`p-3 rounded-2xl text-sm ${msg.role === 'user' ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-tl-none border border-slate-100 dark:border-slate-700 shadow-sm'}`}>
+                      {msg.content}
                     </div>
                   </div>
-                );
-              })}
-
+                </div>
+              ))}
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="flex items-center space-x-2">
-                    <div className="rounded-xl bg-slate-200 p-2 dark:bg-slate-800">
+                  <div className="flex items-start space-x-2">
+                    <div className="p-2 rounded-xl bg-slate-200 dark:bg-slate-800">
                       <Bot className="h-4 w-4 text-slate-600 dark:text-slate-400" />
                     </div>
-                    <div className="rounded-2xl border border-slate-100 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                    <div className="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm">
                       <Loader2 className="h-4 w-4 animate-spin text-indigo-600" />
                     </div>
                   </div>
                 </div>
               )}
-
               <div ref={messagesEndRef} />
             </div>
 
-            <form onSubmit={handleSend} className="border-t border-slate-100 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+            {/* Input */}
+            <form onSubmit={handleSend} className="p-4 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
               <div className="relative flex items-center">
                 <input
                   type="text"
-                  value={input}
-                  onChange={(event) => setInput(event.target.value)}
                   placeholder="Ask me anything..."
-                  aria-label="Ask the AI helper"
-                  className="w-full rounded-xl bg-slate-100 py-3 pl-4 pr-12 text-sm outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-slate-800 dark:text-white dark:placeholder-slate-500"
+                  className="w-full pl-4 pr-12 py-3 bg-slate-100 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm dark:text-white dark:placeholder-slate-500"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
                 />
                 <button
                   type="submit"
                   disabled={!input.trim() || isLoading}
-                  aria-label="Send message"
-                  className="absolute right-1.5 rounded-lg bg-indigo-600 p-2 text-white transition-all hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="absolute right-1.5 p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Send className="h-4 w-4" />
                 </button>
@@ -159,16 +149,14 @@ export default function AIHelper() {
       </AnimatePresence>
 
       <motion.button
-        type="button"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
-        onClick={() => setIsOpen((open) => !open)}
-        aria-label={isOpen ? 'Close AI helper' : 'Open AI helper'}
-        className={`rounded-full p-4 shadow-2xl transition-all ${
-          isOpen
-            ? 'bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
-            : isStudyMode
-              ? 'bg-slate-800/50 text-slate-500 opacity-30 hover:opacity-100'
+        onClick={() => setIsOpen(!isOpen)}
+        className={`p-4 rounded-full shadow-2xl transition-all ${
+          isOpen 
+            ? 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400' 
+            : isStudyMode 
+              ? 'bg-slate-800/50 text-slate-500 opacity-30 hover:opacity-100' 
               : 'bg-indigo-600 text-white'
         }`}
       >
