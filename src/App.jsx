@@ -1,22 +1,21 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Home from './pages/Home';
+import { AnimatePresence, motion } from 'motion/react';
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
+import AIHelper from './components/AIHelper';
+import Footer from './components/Footer';
+import Navbar from './components/Navbar';
+import { AuthProvider } from './contexts/AuthContext';
+import { NotificationProvider } from './contexts/NotificationContext';
+import { StudyModeProvider, useStudyMode } from './contexts/StudyModeContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import CourseHub from './pages/CourseHub';
 import Discussions from './pages/Discussions';
 import Friends from './pages/Friends';
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
-import { AuthProvider } from './contexts/AuthContext';
-import { NotificationProvider } from './contexts/NotificationContext';
-import { ThemeProvider } from './contexts/ThemeContext';
-import { StudyModeProvider, useStudyMode } from './contexts/StudyModeContext';
+import Home from './pages/Home';
 import Profile from './pages/Profile';
-import { motion, AnimatePresence } from 'motion/react';
-import { useLocation } from 'react-router-dom';
-import AIHelper from './components/AIHelper';
 
 function AnimatedRoutes() {
   const location = useLocation();
+
   return (
     <AnimatePresence mode="wait">
       <motion.div
@@ -24,7 +23,7 @@ function AnimatedRoutes() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
-        transition={{ duration: 0.3, ease: "easeInOut" }}
+        transition={{ duration: 0.3, ease: 'easeInOut' }}
         className="w-full h-full"
       >
         <Routes location={location}>
@@ -41,13 +40,14 @@ function AnimatedRoutes() {
 
 function AppLayout() {
   const { isStudyMode } = useStudyMode();
-  
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans flex flex-col transition-colors duration-300">
       <Navbar />
+
       <AnimatePresence>
         {isStudyMode && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
@@ -57,9 +57,11 @@ function AppLayout() {
           </motion.div>
         )}
       </AnimatePresence>
+
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         <AnimatedRoutes />
       </main>
+
       <Footer />
       <AIHelper />
     </div>
@@ -72,9 +74,9 @@ export default function App() {
       <StudyModeProvider>
         <AuthProvider>
           <NotificationProvider>
-            <Router>
+            <BrowserRouter>
               <AppLayout />
-            </Router>
+            </BrowserRouter>
           </NotificationProvider>
         </AuthProvider>
       </StudyModeProvider>
